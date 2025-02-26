@@ -7,10 +7,10 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="userRoleId">
         insert into user_role_tb
         values (
-            default,
-            #{userId},
-            #{roleId},
-            now()
+        default,
+        #{userId},
+        #{roleId},
+        now()
         )
     </insert>
 </mapper>

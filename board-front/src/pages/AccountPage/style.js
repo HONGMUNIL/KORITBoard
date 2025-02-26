@@ -69,6 +69,19 @@ export const saveButton = css`
     &:active {
         background-color: #1b65af;
     }
+
+    &:disabled{
+        background-color: #eeeeee;
+        cursor: default;
+        
+    }
+`;
+
+export const itemGroup = css`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
 `;
 
 export const subTitle = css`
@@ -82,4 +95,21 @@ export const subContent = css`
     font-size: 1.4rem;
     font-weight: 400;
     color: #777777;
+`;
+
+export const borderButton = css`
+    box-sizing: border-box;
+    border: 0.1rem solid #dbdbdb;
+    border-radius: 0.5rem;
+    padding: 0.7rem 2rem;
+    background-color: #ffffff;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #fafafa;
+    }
+
+    &:active {
+        background-color: #eeeeee;
+    }
 `;

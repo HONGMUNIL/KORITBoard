@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 public class UserRoleRepository {
     @Autowired
     private UserRoleMapper userRoleMapper;
-
+    
     public UserRole save(UserRole userRole) {
         userRoleMapper.insert(userRole);
         return userRole;

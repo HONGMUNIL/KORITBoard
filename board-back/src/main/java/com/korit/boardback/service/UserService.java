@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,8 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private UserRoleRepository userRoleRepository;
+    @Autowired
+    private FileService fileService;
 
     public boolean duplicatedByUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
@@ -39,9 +42,9 @@ public class UserService {
     public User join(ReqJoinDto reqJoinDto) {
         if(duplicatedByUsername(reqJoinDto.getUsername())) {
             throw new DuplicatedValueException(List.of(FieldError.builder()
-                            .field("username")
-                            .message("이미 존재하는 사용자이름입니다.")
-                            .build()));
+                    .field("username")
+                    .message("이미 존재하는 사용자이름입니다.")
+                    .build()));
         }
         User user = User.builder()
                 .username(reqJoinDto.getUsername())
@@ -78,14 +81,18 @@ public class UserService {
                 Integer.toString(user.getUserId()),
                 expires);
     }
+    @Transactional(rollbackFor = Exception.class)
+    public void updateProfileImg(User user, MultipartFile file) {
+        final String PROFILE_IMG_FILE_PATH = "/upload/user/profile";
+        String savedFileName = fileService.saveFile(PROFILE_IMG_FILE_PATH, file);
+        userRepository.updateProfileImg(user.getUserId(), savedFileName);
+        if(user.getProfileImg() == null) {return;}
+        fileService.deleteFile(PROFILE_IMG_FILE_PATH + "/" + user.getProfileImg());
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public void updateNickname(User user, String nickname) {
+        userRepository.updateNickname(user.getUserId(), nickname);
+
+    }
 
 }
-
-
-
-
-
-
-
-
-
