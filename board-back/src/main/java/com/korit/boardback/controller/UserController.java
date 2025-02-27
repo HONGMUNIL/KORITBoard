@@ -47,7 +47,19 @@ public class UserController {
             @AuthenticationPrincipal PrincipalUser principalUser,
             @RequestBody Map<String, String> requestBody
     ) {
-        System.out.println(requestBody.get("nickname"));
+
+        String nickname = requestBody.get("nickname");
+        userService.updateNickname(principalUser.getUser(), nickname);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/user/profile/password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @RequestBody Map<String, String> requestBody
+    ) {
+        String password = requestBody.get("password");
+        userService.updatePassword(principalUser.getUser(), password);
         return ResponseEntity.ok().build();
     }
 }
