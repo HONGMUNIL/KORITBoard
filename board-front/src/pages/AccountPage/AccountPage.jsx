@@ -4,16 +4,17 @@ import { api } from '../../configs/axiosConfig';
 import { useUpdateNicknameMutation, useUpdateProfileImgMutation } from '../../mutations/accountMutation';
 import { useUserMeQuery } from '../../queries/userQuery';
 import * as s from './style';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PasswordModal from '../../components/auth/PasswordModal/PasswordModal';
+import { useQueryClient } from '@tanstack/react-query';
 
 function AccountPage(props) {
     const loginUser = useUserMeQuery();
     const updateProfileImgMutation = useUpdateProfileImgMutation();
     const updateNicknameMutation = useUpdateNicknameMutation();
-    const [ nicknameValue, setNickNameValue ] = useState("");
-    const [ passwordModalOpen, setPasswordModalOpen ] = useState(false);
 
+    const [ passwordModalOpen, setPasswordModalOpen ] = useState(false);
+    const [ nicknameValue, setNickNameValue ] = useState("");
 
     useEffect(() => {
         setNickNameValue(loginUser?.data?.data.nickname || "");
@@ -31,11 +32,11 @@ function AccountPage(props) {
         loginUser.refetch();
     }
 
-
-    const handleNicknameInputOnChange = (e) =>{
+    const handleNicknameInputOnChange = (e) => {
         setNickNameValue(e.target.value);
     }
-    const handleSaveNickNameButtonOnClick = async () =>{
+
+    const handleSaveNicknameButtonOnClick = async () => {
         await updateNicknameMutation.mutateAsync(nicknameValue);
         loginUser.refetch();
     }
@@ -45,7 +46,7 @@ function AccountPage(props) {
     }
 
     return (
-        <div css={s.container}>
+        <div id='passwordModal' css={s.container}>
             <h2 css={s.title}>Account</h2>
             <div css={s.accountBox}>
                 <label css={s.profileImgBox}>
@@ -58,9 +59,9 @@ function AccountPage(props) {
                 <div>
                     <h3 css={s.nicknameTitle}>Preferred nickname</h3>
                     <div>
-                        <input css={s.textInput} type="text" onChange={handleNicknameInputOnChange} value={nicknameValue} />
+                        <input css={s.textInput} type="text" value={nicknameValue} onChange={handleNicknameInputOnChange} />
                     </div>
-                    <button css={s.saveButton} onClick={handleSaveNickNameButtonOnClick} disabled={loginUser?.data?.data.nickname === nicknameValue}>Save nickname</button>
+                    <button css={s.saveButton} onClick={handleSaveNicknameButtonOnClick} disabled={loginUser?.data?.data.nickname === nicknameValue} >Save nickname</button>
                 </div>
             </div>
             
@@ -71,7 +72,7 @@ function AccountPage(props) {
                         <h3 css={s.subTitle}>Email</h3>
                         <p css={s.subContent}>{loginUser?.data?.data.email}</p>
                     </div>
-                    <button css={s.borderButton}>Change email</button>
+                    <button css={s.borderButton} onClick={() => api.post("/api/auth/email", {email: "bear4564@naver.com"})}>Change email</button>
                 </div>
                 <div css={s.itemGroup}>
                     <div>
@@ -85,22 +86,20 @@ function AccountPage(props) {
                 isOpen={passwordModalOpen}
                 onRequestClose={() => setPasswordModalOpen(false)}
                 style={{
-                    overlay:{
-                        display:"flex",
-                        justifyContent:"center",
-                        alignItems:"center",
+                    overlay: {
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
                         backgroundColor: "#00000066"
-                    }
-                    ,
-                    content:{
+                    },
+                    content: {
                         position: "static",
                         boxSizing: "border-box",
                         borderRadius: "1.5rem",
                         width: "37rem",
                     }
                 }}
-                children={<PasswordModal  setOpen={setPasswordModalOpen}/>}
-                
+                children={<PasswordModal setOpen={setPasswordModalOpen} />}
             />
         </div>
     );
