@@ -1,0 +1,4 @@
+package com.korit.boardback.entity;
+
+public class Board {
+}
