@@ -4,6 +4,7 @@ import com.korit.boardback.dto.request.ReqAuthEmailDto;
 import com.korit.boardback.dto.request.ReqJoinDto;
 import com.korit.boardback.dto.request.ReqLoginDto;
 import com.korit.boardback.dto.response.RespTokenDto;
+import com.korit.boardback.entity.User;
 import com.korit.boardback.service.EmailService;
 import com.korit.boardback.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,9 +50,9 @@ public class AuthController {
     }
 
     @PostMapping("/email")
-    public ResponseEntity<?> sendAuthEmail(@RequestBody ReqAuthEmailDto dto) throws MessagingException {
-        emailService.sendAuthMail(dto.getEmail(), dto.getUsername());
-
+    public ResponseEntity<?> sendAuthEmail(@RequestBody ReqAuthEmailDto dto) throws Exception {
+        User user = userService.getUserByUsername(dto.getUsername());
+        emailService.sendAuthMail(user.getEmail(), dto.getUsername());
         return ResponseEntity.ok().build();
     }
 
@@ -59,16 +60,15 @@ public class AuthController {
     public ResponseEntity<?> setAuthMail(
             @RequestParam String username,
             @RequestParam String token
-    ){
-
+    ) {
 
         String script = String.format("""
-                    <script>
-                        alert("%s");
-                        widow.close();
-                    </script>
-                """, emailService.auth(username, token));
+            <script>
+                alert("%s");
+                window.close();
+            </script>    
+        """, emailService.auth(username, token));
 
-        return ResponseEntity.ok().header("Content_Type", "text/html; charset=utf=8").body(script);
+        return ResponseEntity.ok().header("Content-Type", "text/html; charset=utf-8").body(script);
     }
 }

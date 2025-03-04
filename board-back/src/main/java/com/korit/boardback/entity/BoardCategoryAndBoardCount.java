@@ -10,8 +10,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoardCategory {
+public class BoardCategoryAndBoardCount {
 
     private int boardCategoryId;
     private String boardCategoryName;
+    private int boardCount;
+
 }
