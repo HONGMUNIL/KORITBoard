@@ -1,23 +1,31 @@
 /**@jsxImportSource @emotion/react */
 import Select from 'react-select';
 import * as s from './style';
-import React from 'react';
 import { BiSearch } from 'react-icons/bi';
-import { GrFormView, GrView } from 'react-icons/gr';
+import { emptyButton } from '../../styles/buttons';
+import { GrView } from 'react-icons/gr';
 import { FcLike } from 'react-icons/fc';
-import { useRecoilValue } from 'recoil';
-import { mainSidebarIsOpenState } from '../../atoms/mainSidebar/mainSidebarAtom';
+import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useGetSearchBoardList } from '../../queries/boardQuery';
 
 function BoardListPage(props) {
+    const [ searchParams, setSearchParams ] = useSearchParams(); 
+    const page = parseInt(searchParams.get("page") || "1");
+    const order = searchParams.get("order") || "recent";
+    const searchText = searchParams.get("searchText") || "";
+    const searchBoardList = useGetSearchBoardList();
 
-    const orderSelectOptions = [ 
+    const orderSelectOptions = [
         {label: "최근 게시글", value: "recent"},
         {label: "오래된 게시글", value: "oldest"},
         {label: "조회수 많은 순", value: "viewsDesc"},
         {label: "조회수 적은 순", value: "viewsAsc"},
         {label: "좋아요 많은 순", value: "likesDesc"},
         {label: "좋아요 적은 순", value: "likesAsc"},
-     ];
+    ];
+
     return (
         <div css={s.container}>
             <div css={s.header}>
@@ -28,25 +36,23 @@ function BoardListPage(props) {
                     <Select 
                         options={orderSelectOptions}
                         styles={{
-                            control:(style) => ({
+                            control: (style) => ({
                                 ...style,
-                                width: "15rem",
-                                minHeight: "2rem",
+                                width: "11rem",
+                                minHeight: "3rem",
                             }),
                             dropdownIndicator: (style) => ({
                                 ...style,
                                 padding: "0.3rem",
                             })
-
                         }}
                     />
                     <div css={s.searchInputBox}>
                         <input type="text" />
-                        <button css={s.emptyButton}><BiSearch /></button>
+                        <button css={emptyButton}><BiSearch /></button>
                     </div>
                 </div>
             </div>
-
             <div css={s.main}>
                 <ul css={s.boardListContainer}>
                     <li>
@@ -56,28 +62,44 @@ function BoardListPage(props) {
                         <div>Count</div>
                         <div>Date</div>
                     </li>
-                    <li>
-                        <div>1000</div>
-                        <div>게시aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-                        <div css={s.boardWriter}>
-                            <div>
-                                <img src="" alt="" />
-                            </div>
-                            <span>nickname</span>
-                        </div>
-                        <div css={s.boardCounts}>
-                            <span><GrView /></span>
-                            <span>100000</span>
-                            <span><FcLike /></span>
-                            <span>3000</span>
-                        </div>
-                        <div>2025-03-05</div>
-                    </li>
-                    
+                    {
+                        searchBoardList.isLoading ||
+                        searchBoardList.data.data.boardSearchList.map(boardList => 
+                            <li key={boardList.boardId}>
+                                <div>{boardList.boardId}</div>
+                                <div>{boardList.title}</div>
+                                <div css={s.boardWriter}>
+                                    <div>
+                                        <img src={`http://localhost:8080/image/user/profile/${boardList.profileImg || "default.png"}`} alt="" />
+                                    </div>
+                                    <span>{boardList.nickname}</span>
+                                </div>
+                                <div css={s.boardCounts}>
+                                    <span>
+                                        <GrView />
+                                        <span>{boardList.viewCount}</span>
+                                    </span>
+                                    <span>
+                                        <FcLike />
+                                        <span>{boardList.likeCount}</span>
+                                    </span>
+                                </div>
+                                <div>{boardList.createdAt}</div>
+                            </li>
+                        )
+                    }
                 </ul>
             </div>
             <div css={s.footer}>
-                1  2  3  4  5
+                <div css={s.pageNumbers}>
+                    <div><GoChevronLeft /></div>
+                    <div css={s.pageNum(page === 1)}><span>1</span></div>
+                    <div css={s.pageNum(page === 2)}><span>2</span></div>
+                    <div css={s.pageNum(page === 3)}><span>3</span></div>
+                    <div css={s.pageNum(page === 4)}><span>4</span></div>
+                    <div css={s.pageNum(page === 5)}><span>5</span></div>
+                    <div><GoChevronRight /></div>
+                </div>
             </div>
         </div>
     );
