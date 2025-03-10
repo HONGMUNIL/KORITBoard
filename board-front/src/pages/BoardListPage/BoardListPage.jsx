@@ -16,6 +16,7 @@ function BoardListPage(props) {
     const order = searchParams.get("order") || "recent";
     const searchText = searchParams.get("searchText") || "";
     const searchBoardList = useGetSearchBoardList();
+    const [ pageNumbers, setPageNumbers ] = useState([]);
 
     const orderSelectOptions = [
         {label: "최근 게시글", value: "recent"},
@@ -25,6 +26,25 @@ function BoardListPage(props) {
         {label: "좋아요 많은 순", value: "likesDesc"},
         {label: "좋아요 적은 순", value: "likesAsc"},
     ];
+
+    useEffect(( )=> {
+        if(!searchBoardList.isLoading){
+            const currentPage = searchBoardList?.data?.data.page || 1;
+            const totalPages = searchBoardList?.data?.data.totalPages || 1;
+            const startIndex = ((currentPage - 1) / 5) * 5 + 1;
+            const endIndex = startIndex + 4 > totalPages ? totalPages : startIndex + 4; 
+            
+
+            let newPageNumbers = [];
+            for(let i = startIndex; i <= endIndex; i++){
+                newPageNumbers.push(i + 1); 
+
+
+            }
+            setPageNumbers(newPageNumbers);
+
+    }
+}, [searchBoardList.data]);
 
     return (
         <div css={s.container}>
@@ -93,11 +113,11 @@ function BoardListPage(props) {
             <div css={s.footer}>
                 <div css={s.pageNumbers}>
                     <div><GoChevronLeft /></div>
-                    <div css={s.pageNum(page === 1)}><span>1</span></div>
-                    <div css={s.pageNum(page === 2)}><span>2</span></div>
-                    <div css={s.pageNum(page === 3)}><span>3</span></div>
-                    <div css={s.pageNum(page === 4)}><span>4</span></div>
-                    <div css={s.pageNum(page === 5)}><span>5</span></div>
+                    {
+                        pageNumbers.map(number =>
+                            <div css={s.pageNum(page === 1)}><span>{number}</span></div>
+                        )
+                    }
                     <div><GoChevronRight /></div>
                 </div>
             </div>

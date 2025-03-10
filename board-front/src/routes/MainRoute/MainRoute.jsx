@@ -29,7 +29,6 @@ function MainRoute(props) {
                     <Route path="/board/list" element={<BoardListPage />} />
                     <Route path="/board/write/:categoryName" element={<BoardWritePage />} />
                     <Route path="/*" element={<NotFoundPage />} />
-                    
                 </Routes>
             </MainContainer>
         </>
