@@ -6,7 +6,7 @@ import { emptyButton } from '../../styles/buttons';
 import { GrView } from 'react-icons/gr';
 import { FcLike } from 'react-icons/fc';
 import { GoChevronLeft, GoChevronRight } from 'react-icons/go';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGetSearchBoardList } from '../../queries/boardQuery';
 
@@ -15,8 +15,15 @@ function BoardListPage(props) {
     const page = parseInt(searchParams.get("page") || "1");
     const order = searchParams.get("order") || "recent";
     const searchText = searchParams.get("searchText") || "";
-    const searchBoardList = useGetSearchBoardList();
+    const searchBoardList = useGetSearchBoardList({
+        page,
+        limitCount: 15,
+        order,
+        searchText,
+    });
+
     const [ pageNumbers, setPageNumbers ] = useState([]);
+    const [ searchInputValue, setSearchInputValue ] = useState(searchText);
 
     const orderSelectOptions = [
         {label: "최근 게시글", value: "recent"},
@@ -27,24 +34,46 @@ function BoardListPage(props) {
         {label: "좋아요 적은 순", value: "likesAsc"},
     ];
 
-    useEffect(( )=> {
-        if(!searchBoardList.isLoading){
+    useEffect(() => {
+        if(!searchBoardList.isLoading) {
             const currentPage = searchBoardList?.data?.data.page || 1;
             const totalPages = searchBoardList?.data?.data.totalPages || 1;
-            const startIndex = ((currentPage - 1) / 5) * 5 + 1;
-            const endIndex = startIndex + 4 > totalPages ? totalPages : startIndex + 4; 
-            
+            const startIndex = Math.floor((currentPage - 1) / 5) * 5 + 1;
+            const endIndex = startIndex + 4 > totalPages ? totalPages : startIndex + 4;
 
-            let newPageNumbers = [];
-            for(let i = startIndex; i <= endIndex; i++){
-                newPageNumbers.push(i + 1); 
-
-
+            let newPageNumbers = []; 
+            for(let i = startIndex; i <= endIndex; i++) {
+                newPageNumbers = [...newPageNumbers, i];
             }
             setPageNumbers(newPageNumbers);
+        }
+    }, [searchBoardList.data]);
 
+    useEffect(() => {
+        searchBoardList.refetch();
+    }, [searchParams]);
+
+    const handlePageNumbersOnClick = (pageNumber) => {
+        searchParams.set("page", pageNumber);
+        setSearchParams(searchParams);
     }
-}, [searchBoardList.data]);
+
+    const handleSelectOnChange = (option) => {
+        searchParams.set("order", option.value);
+        setSearchParams(searchParams);
+    }
+
+    const handleSearchButtonOnClick = () => {
+        searchParams.set("page", 1);
+        searchParams.set("searchText", searchInputValue);
+        setSearchParams(searchParams);
+    }
+
+    const handleSearchInputOnKeyDown = (e) => {
+        if(e.keyCode === 13) {
+            handleSearchButtonOnClick();
+        }
+    }
 
     return (
         <div css={s.container}>
@@ -66,10 +95,12 @@ function BoardListPage(props) {
                                 padding: "0.3rem",
                             })
                         }}
+                        value={orderSelectOptions.find((option) => option.value === order)}
+                        onChange={handleSelectOnChange}
                     />
                     <div css={s.searchInputBox}>
-                        <input type="text" />
-                        <button css={emptyButton}><BiSearch /></button>
+                        <input type="text" value={searchInputValue} onChange={(e) => setSearchInputValue(e.target.value)} onKeyDown={handleSearchInputOnKeyDown} />
+                        <button css={emptyButton} onClick={handleSearchButtonOnClick}><BiSearch /></button>
                     </div>
                 </div>
             </div>
@@ -112,13 +143,13 @@ function BoardListPage(props) {
             </div>
             <div css={s.footer}>
                 <div css={s.pageNumbers}>
-                    <div><GoChevronLeft /></div>
+                    <button disabled={searchBoardList?.data?.data.firstPage} onClick={() => handlePageNumbersOnClick(page - 1)}><GoChevronLeft /></button>
                     {
-                        pageNumbers.map(number =>
-                            <div css={s.pageNum(page === 1)}><span>{number}</span></div>
+                        pageNumbers.map(number => 
+                            <button key={number} css={s.pageNum(page === number)} onClick={() => handlePageNumbersOnClick(number)}><span>{number}</span></button>
                         )
                     }
-                    <div><GoChevronRight /></div>
+                    <button disabled={searchBoardList?.data?.data.lastPage} onClick={() => handlePageNumbersOnClick(page + 1)}><GoChevronRight /></button>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@ import { useRecoilState } from 'recoil';
 import { mainSidebarIsOpenState } from '../../../atoms/mainSidebar/mainSidebarAtom';
 import { LuLockKeyhole } from "react-icons/lu";
 import { useUserMeQuery } from '../../../queries/userQuery';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BiEdit, BiLogOut } from "react-icons/bi";
 import { setTokenLocalStorage } from '../../../configs/axiosConfig';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,7 +16,7 @@ import { useGetCategories } from '../../../queries/boardQuery';
 
 function MainSidebar(props) {
     const navigate = useNavigate();
-    const [isOpen, setOpen] = useRecoilState(mainSidebarIsOpenState);
+    const [ isOpen, setOpen ] = useRecoilState(mainSidebarIsOpenState);
     const queryClient = useQueryClient();
     const loginUserData = queryClient.getQueryData(["userMeQuery"]);
     const categories = useGetCategories();
@@ -31,31 +31,27 @@ function MainSidebar(props) {
 
     const handleLogoutButtonOnClick = async () => {
         setTokenLocalStorage("AccessToken", null);
-        await queryClient.invalidateQueries({ queryKey: ["userMeQuery"] });
+        await queryClient.invalidateQueries({queryKey: ["userMeQuery"]});
         navigate("/auth/login");
     }
 
     const handleWriteOnClick = async (categoryName) => {
-
-        if (!categoryName){
+        if(!categoryName) {
             const categoryData = await Swal.fire({
                 title: "카테고리명을 입력하세요",
                 input: "text",
-                inputPlaceholder: "Enter category name",
+                inputPlaceholder: "Enter category name...",
                 showCancelButton: true,
                 confirmButtonText: "작성하기",
                 cancelButtonText: "취소하기"
             });
-            if (categoryData.isConfirmed) {
-            categoryName = categoryData.value;
-        }else {
-            return;
+            if(categoryData.isConfirmed) {
+                categoryName = categoryData.value;
+            } else {
+                return;
+            }
         }
-        }
-            
-        if (categoryData.isConfirmed) {
-            navigate(`/board/write/${categoryName}`);
-        }
+        navigate(`/board/write/${categoryName}`);
     }
 
     return (
@@ -78,18 +74,24 @@ function MainSidebar(props) {
                         </div>
                     </div>
                     <div css={s.groupLayout}>
-                        <button css={emptyButton}>
-                            <span>전체 게시글글</span>
-                        </button>
+                        <Link to={"/board/list?page=1&order=recent&searchText="}>
+                            <button css={emptyButton}>
+                                <span>
+                                    전체 게시글
+                                </span>
+                            </button>
+                        </Link>
                     </div>
                     <div css={s.groupLayout}>
                         <button css={emptyButton}>
-                            <span>공지 사항</span>
+                            <span>
+                                공지사항
+                            </span>
                         </button>
                     </div>
                     <div css={s.groupLayout}>
                         <div css={s.categoryItem}>
-                            <button css={emptyButton}>내가 작성한 글({categories.isLoading || categories.data.data.reduce((prev, category) => { prev + category.boardCount }, 0)})</button>
+                            <button css={emptyButton}>내가 작성한 글({categories.isLoading || categories.data.data.reduce((prev, category) => {return prev + category.boardCount}, 0)})</button>
                             <button css={basicButton} onClick={() => handleWriteOnClick(null)}><BiEdit /></button>
                         </div>
                     </div>
@@ -104,7 +106,6 @@ function MainSidebar(props) {
                                     <button css={basicButton} onClick={() => handleWriteOnClick(category.boardCategoryName)}><BiEdit /></button>
                                 </div>
                             </div>
-
                         )
                     }
                 </div>
